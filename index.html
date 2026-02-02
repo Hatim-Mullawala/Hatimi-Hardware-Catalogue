@@ -249,17 +249,17 @@
     function handleImageError(img, bImg, nImg, kImg) {
         let step = parseInt(img.getAttribute('data-step') || '1');
         
-        // If Brand-Product fails, try Product Name only
+        // Console log helps you see exactly which file failed to load
+        console.log("Failed: " + img.src + " | Trying Step: " + (step + 1));
+
         if (step === 1) { 
             img.setAttribute('data-step', '2'); 
-            img.src = nImg; 
+            img.src = nImg; // Already includes 'tool/' from createGrid
         } 
-        // If Product Name fails, try the Image Keyword
         else if (step === 2) { 
             img.setAttribute('data-step', '3'); 
-            img.src = kImg; 
+            img.src = kImg; // Already includes 'tool/' from createGrid
         } 
-        // If all fail, show the placeholder
         else { 
             img.onerror = null; 
             img.src = 'https://via.placeholder.com/150?text=Photo+Required'; 
@@ -275,7 +275,7 @@
 
             const clean = (t) => (t || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
             
-            // ADDED "tool/" FOLDER PATH BEFORE FILENAMES
+            // Defining paths to look inside the 'tool' folder
             const bImg = `tool/${clean(brandName)}-${clean(prodName)}.jpg`;
             const nImg = `tool/${clean(prodName)}.jpg`;
             const kImg = `tool/${clean(imgKey)}.jpg`;
