@@ -207,24 +207,36 @@
         target.innerHTML = '';
         let matchedItems = new Set();
 
+        // 1. Reordered Sections: Drilling is now higher to claim "Bits" first
         const groups = {
-            "Cutting & Sawing": ["Aari", "Blade", "Cutter", "Kechi", "Snips", "Hacksaw"],
-            "Striking & Fastening": ["Plier", "Pincer", "Wrench", "Pana", "Spanner", "Socket", "Hammer", "Goti"],
-            "Carpentry & Woodworking": ["Chorsi", "Radda", "Chisel"],
-            "Drilling & Bits": ["Bit"],
-            "Abrasives & Finishing": ["Carborundum", "Cumi", "Brush", "Wheel", "Disc", "File", "Silly", "Batti"]
+            "Drilling & Bits": ["Bit", "Drill", "Hole Saw", "Chuck", "Screwdriver Bit", "Hammer Bit"],
+            "Cutting & Sawing": ["Aari", "Blade", "Cutter", "Kechi", "Snips", "Hacksaw", "Saw", "Scissor", "Trimmer"],
+            "Striking & Fastening": ["Plier", "Pincer", "Wrench", "Pana", "Spanner", "Socket", "Hammer", "Goti", "L-Key", "Screw", "Driver", "Tester"],
+            "Carpentry & Woodworking": ["Chorsi", "Radda", "Chisel", "Planer", "Router", "Measuring Tape", "Adze"],
+            "Abrasives & Finishing": ["Carborundum", "Cumi", "Brush", "Wheel", "Disc", "File", "Silly", "Batti", "Sandpaper", "Grinding", "Buffing"]
         };
 
+        // 2. Sorting Logic
         for (const [title, keys] of Object.entries(groups)) {
             const list = data.filter(row => {
-                const name = (row['Product Name'] || '').toLowerCase();
-                const match = keys.some(k => name.includes(k.toLowerCase()));
-                if(match) matchedItems.add(row);
-                return match;
+                // Skip if this product was already matched in a previous section
+                if (matchedItems.has(row)) return false;
+
+                const keyword = (row['Image Keyword'] || '').toLowerCase().trim();
+                const name = (row['Product Name'] || '').toLowerCase().trim();
+                
+                const isMatch = keys.some(k => {
+                    const cleanKey = k.toLowerCase();
+                    return keyword.includes(cleanKey) || name.includes(cleanKey);
+                });
+
+                if(isMatch) matchedItems.add(row);
+                return isMatch;
             });
             if(list.length > 0) target.innerHTML += createGrid(title, list);
         }
 
+        // 3. Fallback for Miscellaneous items
         const others = data.filter(row => !matchedItems.has(row));
         if(others.length > 0) {
              const uniqueKeywords = [...new Set(others.map(row => (row['Image Keyword'] || 'Miscellaneous')))];
@@ -234,7 +246,6 @@
              });
         }
     }
-
     function handleImageError(img, brandImg, nameImg, keyImg) {
         let step = parseInt(img.getAttribute('data-step') || '1');
         if (step === 1) { img.setAttribute('data-step', '2'); img.src = nameImg; }
