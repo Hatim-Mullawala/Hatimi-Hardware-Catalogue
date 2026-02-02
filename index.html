@@ -246,11 +246,56 @@
              });
         }
     }
-    function handleImageError(img, brandImg, nameImg, keyImg) {
+    function handleImageError(img, bImg, nImg, kImg) {
         let step = parseInt(img.getAttribute('data-step') || '1');
-        if (step === 1) { img.setAttribute('data-step', '2'); img.src = nameImg; }
-        else if (step === 2) { img.setAttribute('data-step', '3'); img.src = keyImg; }
-        else { img.onerror = null; img.src = 'https://via.placeholder.com/150?text=Photo'; }
+        
+        // If Brand-Product fails, try Product Name only
+        if (step === 1) { 
+            img.setAttribute('data-step', '2'); 
+            img.src = nImg; 
+        } 
+        // If Product Name fails, try the Image Keyword
+        else if (step === 2) { 
+            img.setAttribute('data-step', '3'); 
+            img.src = kImg; 
+        } 
+        // If all fail, show the placeholder
+        else { 
+            img.onerror = null; 
+            img.src = 'https://via.placeholder.com/150?text=Photo+Required'; 
+        }
+    }
+
+    function createGrid(title, list) {
+        let gridHtml = `<div class="category-header">${title}</div><div class="product-grid">`;
+        list.forEach(i => {
+            const prodName = (i['Product Name'] || '').trim();
+            const brandName = (i['Brand'] || '').trim();
+            const imgKey = (i['Image Keyword'] || 'tool').trim();
+
+            // This helper cleans the names exactly how GitHub/Web likes them (lowercase, no spaces)
+            const clean = (t) => (t || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+            
+            // PRIORITY 1: brand-product.jpg (e.g., taparia-screwdriver-bit.jpg)
+            const bImg = `${clean(brandName)}-${clean(prodName)}.jpg`;
+            // PRIORITY 2: product.jpg (e.g., screwdriver-bit.jpg)
+            const nImg = `${clean(prodName)}.jpg`;
+            // PRIORITY 3: keyword.jpg (e.g., bit.jpg)
+            const kImg = `${clean(imgKey)}.jpg`;
+            
+            const waMsg = encodeURIComponent(`Inquiry: ${brandName} ${prodName}\nRef: ${bImg}`);
+
+            gridHtml += `<div class="product-card">
+                <div class="image-box">
+                    <img src="${bImg}" data-step="1" onerror="handleImageError(this, '${bImg}', '${nImg}', '${kImg}')">
+                </div>
+                <span class="brand-tag">${brandName}</span>
+                <div class="product-name">${prodName}</div>
+                <div class="specs">${i['Specifications'] || ''}</div>
+                <a href="https://wa.me/919406648766?text=${waMsg}" class="price-contact-btn" target="_blank">REQUEST PRICE</a>
+            </div>`;
+        });
+        return gridHtml + `</div>`;
     }
 
     function createGrid(title, list) {
