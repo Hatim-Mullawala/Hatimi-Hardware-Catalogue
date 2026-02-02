@@ -247,78 +247,55 @@
         }
     }
     function handleImageError(img, bImg, nImg, kImg) {
-        let step = parseInt(img.getAttribute('data-step') || '1');
+    let step = parseInt(img.getAttribute('data-step') || '1');
+    
+    // Log to console to see exactly what path is failing
+    console.log("Failed: " + img.src);
+
+    if (step === 1) { 
+        img.setAttribute('data-step', '2'); 
+        // We ensure Step 2 also looks in the tool folder
+        img.src = nImg; 
+    } 
+    else if (step === 2) { 
+        img.setAttribute('data-step', '3'); 
+        // We ensure Step 3 also looks in the tool folder
+        img.src = kImg; 
+    } 
+    else { 
+        img.onerror = null; 
+        img.src = 'https://via.placeholder.com/150?text=No+Photo'; 
+    }
+}
+
+    function createGrid(title, list) {
+    let gridHtml = `<div class="category-header">${title}</div><div class="product-grid">`;
+    list.forEach(i => {
+        const prodName = (i['Product Name'] || '').trim();
+        const brandName = (i['Brand'] || '').trim();
+        const imgKey = (i['Image Keyword'] || 'tool').trim();
+
+        const clean = (t) => (t || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
         
-        // Console log helps you see exactly which file failed to load
-        console.log("Failed: " + img.src + " | Trying Step: " + (step + 1));
+        // Setting up the initial search paths inside the "tool" folder
+        const bImg = `tool/${clean(brandName)}-${clean(prodName)}.jpg`;
+        const nImg = `tool/${clean(prodName)}.jpg`;
+        const kImg = `tool/${clean(imgKey)}.jpg`;
+        
+        const waMsg = encodeURIComponent(`Inquiry: ${brandName} ${prodName}\nRef: ${bImg}`);
 
-        if (step === 1) { 
-            img.setAttribute('data-step', '2'); 
-            img.src = nImg; // Already includes 'tool/' from createGrid
-        } 
-        else if (step === 2) { 
-            img.setAttribute('data-step', '3'); 
-            img.src = kImg; // Already includes 'tool/' from createGrid
-        } 
-        else { 
-            img.onerror = null; 
-            img.src = 'https://via.placeholder.com/150?text=Photo+Required'; 
-        }
-    }
-
-    function createGrid(title, list) {
-        let gridHtml = `<div class="category-header">${title}</div><div class="product-grid">`;
-        list.forEach(i => {
-            const prodName = (i['Product Name'] || '').trim();
-            const brandName = (i['Brand'] || '').trim();
-            const imgKey = (i['Image Keyword'] || 'tool').trim();
-
-            const clean = (t) => (t || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-            
-            // Defining paths to look inside the 'tool' folder
-            const bImg = `tool/${clean(brandName)}-${clean(prodName)}.jpg`;
-            const nImg = `tool/${clean(prodName)}.jpg`;
-            const kImg = `tool/${clean(imgKey)}.jpg`;
-            
-            const waMsg = encodeURIComponent(`Inquiry: ${brandName} ${prodName}\nRef: ${bImg}`);
-
-            gridHtml += `<div class="product-card">
-                <div class="image-box">
-                    <img src="${bImg}" data-step="1" onerror="handleImageError(this, '${bImg}', '${nImg}', '${kImg}')">
-                </div>
-                <span class="brand-tag">${brandName}</span>
-                <div class="product-name">${prodName}</div>
-                <div class="specs">${i['Specifications'] || ''}</div>
-                <a href="https://wa.me/919406648766?text=${waMsg}" class="price-contact-btn" target="_blank">REQUEST PRICE</a>
-            </div>`;
-        });
-        return gridHtml + `</div>`;
-    }
-
-    function createGrid(title, list) {
-        let gridHtml = `<div class="category-header">${title}</div><div class="product-grid">`;
-        list.forEach(i => {
-            const prodName = (i['Product Name'] || '').trim();
-            const brandName = (i['Brand'] || '').trim();
-            const imgKey = (i['Image Keyword'] || 'tool').trim();
-
-            const clean = (t) => (t || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-            const bImg = `${clean(brandName)}-${clean(prodName)}.jpg`, nImg = `${clean(prodName)}.jpg`, kImg = `${clean(imgKey)}.jpg`;
-            
-            const waMsg = encodeURIComponent(`Inquiry: ${brandName} ${prodName}\nRef: ${bImg}`);
-
-            gridHtml += `<div class="product-card">
-                <div class="image-box">
-                    <img src="${bImg}" data-step="1" onerror="handleImageError(this, '${bImg}', '${nImg}', '${kImg}')">
-                </div>
-                <span class="brand-tag">${brandName}</span>
-                <div class="product-name">${prodName}</div>
-                <div class="specs">${i['Specifications'] || ''}</div>
-                <a href="https://wa.me/919406648766?text=${waMsg}" class="price-contact-btn" target="_blank">REQUEST PRICE</a>
-            </div>`;
-        });
-        return gridHtml + `</div>`;
-    }
+        gridHtml += `<div class="product-card">
+            <div class="image-box">
+                <img src="${bImg}" data-step="1" onerror="handleImageError(this, '${bImg}', '${nImg}', '${kImg}')">
+            </div>
+            <span class="brand-tag">${brandName}</span>
+            <div class="product-name">${prodName}</div>
+            <div class="specs">${i['Specifications'] || ''}</div>
+            <a href="https://wa.me/919406648766?text=${waMsg}" class="price-contact-btn" target="_blank">REQUEST PRICE</a>
+        </div>`;
+    });
+    return gridHtml + `</div>`;
+}
 
     function filterProducts() {
         const query = document.getElementById('searchInput').value.toLowerCase();
