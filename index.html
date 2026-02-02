@@ -273,15 +273,12 @@
             const brandName = (i['Brand'] || '').trim();
             const imgKey = (i['Image Keyword'] || 'tool').trim();
 
-            // This helper cleans the names exactly how GitHub/Web likes them (lowercase, no spaces)
             const clean = (t) => (t || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
             
-            // PRIORITY 1: brand-product.jpg (e.g., taparia-screwdriver-bit.jpg)
-            const bImg = `${clean(brandName)}-${clean(prodName)}.jpg`;
-            // PRIORITY 2: product.jpg (e.g., screwdriver-bit.jpg)
-            const nImg = `${clean(prodName)}.jpg`;
-            // PRIORITY 3: keyword.jpg (e.g., bit.jpg)
-            const kImg = `${clean(imgKey)}.jpg`;
+            // ADDED "tool/" FOLDER PATH BEFORE FILENAMES
+            const bImg = `tool/${clean(brandName)}-${clean(prodName)}.jpg`;
+            const nImg = `tool/${clean(prodName)}.jpg`;
+            const kImg = `tool/${clean(imgKey)}.jpg`;
             
             const waMsg = encodeURIComponent(`Inquiry: ${brandName} ${prodName}\nRef: ${bImg}`);
 
